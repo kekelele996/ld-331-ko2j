@@ -29,8 +29,14 @@ func (r *ScheduleRuleRepository) Upsert(v *model.ScheduleRule) error {
 	return r.db.Model(&existing).Updates(attrs).Error
 }
 func (r *ScheduleRuleRepository) ByDepartment(id uint) (model.ScheduleRule, error) {
+	return r.ByDepartmentTx(r.db, id)
+}
+
+// ByDepartmentTx loads the rule using tx so callers inside a transaction do not
+// acquire a second connection (which deadlocks single-connection pools).
+func (r *ScheduleRuleRepository) ByDepartmentTx(tx *gorm.DB, id uint) (model.ScheduleRule, error) {
 	var v model.ScheduleRule
-	e := r.db.Where("department_id=?", id).First(&v).Error
+	e := tx.Where("department_id=?", id).First(&v).Error
 	if errors.Is(e, gorm.ErrRecordNotFound) {
 		return v, ErrNotFound
 	}

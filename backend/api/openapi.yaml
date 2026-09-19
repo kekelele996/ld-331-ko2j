@@ -5,5 +5,17 @@ paths:
   /api/v1/auth/login: {post: {summary: 登录}}
   /api/v1/schedules: {get: {summary: 查询可视化排班表}}
   /api/v1/schedules/generate: {post: {summary: 自动生成排班}}
-  /api/v1/shift-requests: {get: {summary: 查询调班申请}, post: {summary: 提交调班申请}}
+  /api/v1/shift-requests:
+    get: {summary: 查询调班申请}
+    post:
+      summary: 提交调班申请
+      description: 申请人只能提交本人班次；替班人必须当前拥有指定的替班班次，否则 400 拒绝。
+  /api/v1/shift-requests/{id}/review:
+    put:
+      summary: 主管审批调班申请
+      description: >
+        通过时在单个数据库事务内原子交换双方排班并置申请为 approved。
+        若换班后任一人出现夜班后接白班、连续工作天数超限或同日重复排班，
+        返回 409 并在 message 中列出具体冲突，整次拒绝且排班不变。
+        重复或并发审批仅一次成功，其余返回 409（申请已完成审批）。
   /api/v1/schedules/statistics: {get: {summary: 月度工时统计}}

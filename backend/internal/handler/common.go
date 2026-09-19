@@ -4,17 +4,27 @@ import (
 	"errors"
 	"github.com/gbsched/hospital-scheduler/internal/constants"
 	"github.com/gbsched/hospital-scheduler/internal/repository"
+	"github.com/gbsched/hospital-scheduler/internal/service"
 	"github.com/gbsched/hospital-scheduler/pkg/response"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func handleError(c *gin.Context, e error) {
-	if errors.Is(e, repository.ErrNotFound) {
+	var conflict *service.SwapConflictError
+	switch {
+	case errors.Is(e, repository.ErrNotFound):
 		response.Error(c, http.StatusNotFound, constants.CodeNotFound, "资源不存在")
-		return
+	case errors.Is(e, repository.ErrAlreadyReviewed):
+		// Duplicate/concurrent review: the first one already took effect.
+		response.Error(c, http.StatusConflict, constants.CodeConflict, "该申请已完成审批，请勿重复审批")
+	case errors.As(e, &conflict):
+		response.Error(c, http.StatusConflict, constants.CodeConflict, conflict.Error())
+	case errors.Is(e, service.ErrInvalidSwap):
+		response.Error(c, http.StatusBadRequest, constants.CodeBadRequest, e.Error())
+	default:
+		response.Error(c, http.StatusBadRequest, constants.CodeBadRequest, e.Error())
 	}
-	response.Error(c, http.StatusBadRequest, constants.CodeBadRequest, e.Error())
 }
 func parseID(c *gin.Context) (uint, bool) {
 	var id uint

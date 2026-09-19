@@ -29,6 +29,13 @@ func main() {
 	if e != nil {
 		panic(fmt.Errorf("connect database: %w", e))
 	}
+	if cfg.DBDriver != "mysql" {
+		// SQLite serializes all writers; a single connection prevents "database
+		// is locked" errors when concurrent approvals contend on the same rows.
+		if sqlDB, e := db.DB(); e == nil {
+			sqlDB.SetMaxOpenConns(1)
+		}
+	}
 	if e = db.AutoMigrate(&model.Department{}, &model.Position{}, &model.Staff{}, &model.Shift{}, &model.Schedule{}, &model.ShiftRequest{}, &model.ScheduleRule{}, &model.Holiday{}, &model.AuditLog{}); e != nil {
 		panic(fmt.Errorf("migrate database: %w", e))
 	}
@@ -46,7 +53,7 @@ func main() {
 	posSvc := service.NewPositionService(posRepo, logger)
 	staffSvc := service.NewStaffService(staffRepo, logger)
 	schedSvc := service.NewScheduleService(schedRepo, staffRepo, shiftRepo, ruleRepo, logger)
-	reqSvc := service.NewShiftRequestService(reqRepo, schedRepo, db, logger)
+	reqSvc := service.NewShiftRequestService(reqRepo, schedRepo, ruleRepo, db, logger)
 	ruleSvc := service.NewRuleService(ruleRepo, logger)
 	holidaySvc := service.NewHolidayService(holidayRepo, logger)
 	auditSvc := service.NewAuditService(auditRepo, logger)

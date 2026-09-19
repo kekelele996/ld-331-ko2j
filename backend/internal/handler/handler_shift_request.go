@@ -29,11 +29,12 @@ func (h *ShiftRequestHandler) Create(c *gin.Context) {
 		response.Error(c, 400, constants.CodeBadRequest, "调班申请参数错误")
 		return
 	}
-	if e := h.s.Create(model.ShiftRequest{ScheduleID: q.ScheduleID, SubstituteID: q.SubstituteID, SubstituteScheduleID: q.SubstituteScheduleID, Reason: q.Reason}, middleware.StaffID(c)); e != nil {
+	created, e := h.s.Create(model.ShiftRequest{ScheduleID: q.ScheduleID, SubstituteID: q.SubstituteID, SubstituteScheduleID: q.SubstituteScheduleID, Reason: q.Reason}, middleware.StaffID(c))
+	if e != nil {
 		handleError(c, e)
 		return
 	}
-	response.OK(c, "申请已提交")
+	response.OK(c, created)
 }
 func (h *ShiftRequestHandler) Review(c *gin.Context) {
 	id, ok := parseID(c)
