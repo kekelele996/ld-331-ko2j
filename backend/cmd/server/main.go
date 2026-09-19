@@ -46,7 +46,7 @@ func main() {
 	posSvc := service.NewPositionService(posRepo, logger)
 	staffSvc := service.NewStaffService(staffRepo, logger)
 	schedSvc := service.NewScheduleService(schedRepo, staffRepo, shiftRepo, ruleRepo, logger)
-	reqSvc := service.NewShiftRequestService(reqRepo, schedRepo, db, logger)
+	reqSvc := service.NewShiftRequestService(reqRepo, schedRepo, ruleRepo, auditRepo, db, logger)
 	ruleSvc := service.NewRuleService(ruleRepo, logger)
 	holidaySvc := service.NewHolidayService(holidayRepo, logger)
 	auditSvc := service.NewAuditService(auditRepo, logger)

@@ -22,6 +22,8 @@ type ShiftRequest struct {
 	Status               RequestStatus `json:"status"`
 	ReviewerID           *uint         `json:"reviewer_id"`
 	ReviewedAt           *time.Time    `json:"reviewed_at"`
-	Applicant            Staff         `gorm:"foreignKey:ApplicantID" json:"applicant,omitempty"`
-	Substitute           Staff         `gorm:"foreignKey:SubstituteID" json:"substitute,omitempty"`
+	Applicant            Staff     `gorm:"foreignKey:ApplicantID" json:"applicant,omitempty"`
+	Substitute           Staff     `gorm:"foreignKey:SubstituteID" json:"substitute,omitempty"`
+	Schedule             Schedule  `gorm:"foreignKey:ScheduleID" json:"schedule,omitempty"`
+	SubstituteSchedule   Schedule  `gorm:"foreignKey:SubstituteScheduleID" json:"substitute_schedule,omitempty"`
 }

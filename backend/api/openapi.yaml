@@ -5,5 +5,13 @@ paths:
   /api/v1/auth/login: {post: {summary: 登录}}
   /api/v1/schedules: {get: {summary: 查询可视化排班表}}
   /api/v1/schedules/generate: {post: {summary: 自动生成排班}}
-  /api/v1/shift-requests: {get: {summary: 查询调班申请}, post: {summary: 提交调班申请}}
+  /api/v1/shift-requests: {get: {summary: 查询调班申请}, post: {summary: 提交调班申请（仅本人班次；替班人须对应其指定班次）}}
+  /api/v1/shift-requests/{id}/review:
+    put:
+      summary: 主管审批调班申请
+      description: >
+        单事务执行。通过时先模拟交换并校验合规性（夜班后接白班、连续工作天数超限、
+        同日重复排班），存在冲突整次拒绝（HTTP 409）并返回逐条冲突说明；
+        通过则原子交换双方排班并置申请为 approved。重复或并发审批仅一次生效，
+        其余返回 40901「该调班申请已审批，请勿重复操作」。
   /api/v1/schedules/statistics: {get: {summary: 月度工时统计}}

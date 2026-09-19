@@ -29,8 +29,14 @@ func (r *ScheduleRuleRepository) Upsert(v *model.ScheduleRule) error {
 	return r.db.Model(&existing).Updates(attrs).Error
 }
 func (r *ScheduleRuleRepository) ByDepartment(id uint) (model.ScheduleRule, error) {
+	return r.ByDepartmentOn(r.db, id)
+}
+
+// ByDepartmentOn 在指定句柄（通常是事务）上查询科室规则，
+// 保证审批校验时规则读取与排班读取处于同一事务快照。
+func (r *ScheduleRuleRepository) ByDepartmentOn(tx *gorm.DB, id uint) (model.ScheduleRule, error) {
 	var v model.ScheduleRule
-	e := r.db.Where("department_id=?", id).First(&v).Error
+	e := tx.Where("department_id=?", id).First(&v).Error
 	if errors.Is(e, gorm.ErrRecordNotFound) {
 		return v, ErrNotFound
 	}
